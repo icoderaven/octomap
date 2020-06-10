@@ -188,10 +188,9 @@ if(INSTALL_CONFIG)
   include(CPackSettings)
 
   # Finished:
-  message("\n")
   message(STATUS "Compile octomap using: make")
   message(STATUS "Install octomap using: make install")
   message(STATUS "    (be sure to set the correct CMAKE_INSTALL_PREFIX before)")
-  message(STATUS "Compile API-documentation using: make docs\n")
+  message(STATUS "Compile API-documentation using: make docs")
 
 endif()

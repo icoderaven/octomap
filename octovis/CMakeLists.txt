@@ -91,7 +91,6 @@ else()
 endif()
 
 if(BUILD_VIEWER)
-  message(STATUS "\n")
   message(STATUS "viewer octovis will be built")
 
   set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
