@@ -15,7 +15,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON) # enables -fPIC in applicable compilers
                                         # cases)
 option(OCTOMAP_BUILD_STATIC "Build Static libraries" ON)
 option(OCTOMAP_BUILD_SHARED "Build Shared libraries" ON)
-option(OCTOMAP_LIB_ONLY "Only build libraries" OFF)
+option(OCTOMAP_BUILD_ONLY_LIB "Only build libraries" OFF)
 option(BUILD_OCTOVIS_SUBPROJECT "Build targets from subproject octovis" ON)
 option(BUILD_DYNAMICEDT3D_SUBPROJECT
        "Build targets from subproject dynamicEDT3D" ON)
