@@ -26,7 +26,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules")
 include(CompilerSettings)
 
 # Set output directories for libraries and executables
-set(BASE_DIR ${CMAKE_SOURCE_DIR})
+set(BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BASE_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BASE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BASE_DIR}/bin)

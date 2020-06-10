@@ -39,153 +39,159 @@ if(OCTOMAP_OMP)
       "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif(OCTOMAP_OMP)
 
-# Set output directories for libraries and executables
-set(BASE_DIR ${CMAKE_SOURCE_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BASE_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BASE_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BASE_DIR}/bin)
-# output dirs for multi-config builds (MSVC)
-foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-  string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BASE_DIR}/lib)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BASE_DIR}/lib)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BASE_DIR}/bin)
-endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
+if(INSTALL_CONFIG)
 
-set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
-# Installation
+  # Set output directories for libraries and executables
+  set(BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BASE_DIR}/lib)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BASE_DIR}/lib)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BASE_DIR}/bin)
+  # output dirs for multi-config builds (MSVC)
+  foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BASE_DIR}/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BASE_DIR}/lib)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BASE_DIR}/bin)
+  endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 
-set(INSTALL_TARGETS_DEFAULT_ARGS
-    RUNTIME
-    DESTINATION
-    "${CMAKE_INSTALL_BINDIR}"
-    LIBRARY
-    DESTINATION
-    "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE
-    DESTINATION
-    "${CMAKE_INSTALL_LIBDIR}")
+  set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
+  # Installation
 
-add_subdirectory(src/math)
-add_subdirectory(src)
+  set(INSTALL_TARGETS_DEFAULT_ARGS
+      RUNTIME
+      DESTINATION
+      "${CMAKE_INSTALL_BINDIR}"
+      LIBRARY
+      DESTINATION
+      "${CMAKE_INSTALL_LIBDIR}"
+      ARCHIVE
+      DESTINATION
+      "${CMAKE_INSTALL_LIBDIR}")
 
-file(GLOB octomap_HDRS ${PROJECT_SOURCE_DIR}/include/octomap/*.h
-     ${PROJECT_SOURCE_DIR}/include/octomap/*.hxx)
-install(FILES ${octomap_HDRS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octomap")
-file(GLOB octomap_math_HDRS ${PROJECT_SOURCE_DIR}/include/octomap/math/*.h)
-install(FILES ${octomap_math_HDRS}
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octomap/math")
+  add_subdirectory(src/math)
+  add_subdirectory(src)
 
-# Install catkin package.xml
-install(FILES package.xml DESTINATION "${CMAKE_INSTALL_DATADIR}/octomap")
+  file(GLOB octomap_HDRS ${PROJECT_SOURCE_DIR}/include/octomap/*.h
+       ${PROJECT_SOURCE_DIR}/include/octomap/*.hxx)
+  install(FILES ${octomap_HDRS}
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octomap")
+  file(GLOB octomap_math_HDRS ${PROJECT_SOURCE_DIR}/include/octomap/math/*.h)
+  install(FILES ${octomap_math_HDRS}
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octomap/math")
 
-# uninstall target
-configure_file(
-  "${PROJECT_SOURCE_DIR}/CMakeModules/CMakeUninstall.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
+  # Install catkin package.xml
+  install(FILES package.xml DESTINATION "${CMAKE_INSTALL_DATADIR}/octomap")
 
-add_custom_target(
-  uninstall COMMAND ${CMAKE_COMMAND} -P
-                    ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+  # uninstall target
+  configure_file(
+    "${PROJECT_SOURCE_DIR}/CMakeModules/CMakeUninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
 
-# Export the package for use from the build-tree (this registers the build-tree
-# with a global CMake-registry)
-export(PACKAGE octomap)
-
-# Create a octomap-config.cmake file for the use from the build tree
-set(OCTOMAP_INCLUDE_DIRS "${INCLUDE_DIRS}")
-set(OCTOMAP_LIB_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-# Set library names as absolute paths Windows, spec. MSVC requires the .lib
-# suffix for imported libs
-if(WIN32)
-  set(OCTOMAP_LIBRARY
-      "${CMAKE_IMPORT_LIBRARY_PREFIX}octomap${CMAKE_IMPORT_LIBRARY_SUFFIX}")
-  set(OCTOMATH_LIBRARY
-      "${CMAKE_IMPORT_LIBRARY_PREFIX}octomath${CMAKE_IMPORT_LIBRARY_SUFFIX}")
-else()
-  set(OCTOMAP_LIBRARY
-      "${CMAKE_SHARED_LIBRARY_PREFIX}octomap${CMAKE_SHARED_LIBRARY_SUFFIX}")
-  set(OCTOMATH_LIBRARY
-      "${CMAKE_SHARED_LIBRARY_PREFIX}octomath${CMAKE_SHARED_LIBRARY_SUFFIX}")
-endif()
-
-# not used right now (export depends?) set(OCTOMAP_CMAKE_DIR
-# "${PROJECT_BINARY_DIR}")
-include(CMakePackageConfigHelpers)
-
-configure_package_config_file(
-  octomap-config.cmake.in
-  "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-config.cmake"
-  PATH_VARS
-  OCTOMAP_INCLUDE_DIRS
-  OCTOMAP_LIB_DIR
-  INSTALL_DESTINATION
-  "${CMAKE_INSTALL_FULL_DATADIR}/octomap")
-
-write_basic_package_version_file(
-  "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-config-version.cmake"
-  VERSION ${OCTOMAP_VERSION}
-  COMPATIBILITY AnyNewerVersion)
-
-# Create a octomap-config.cmake file for the use from the install tree and
-# install it
-set(OCTOMAP_INCLUDE_DIRS "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
-set(OCTOMAP_LIB_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
-# set(OCTOMAP_CMAKE_DIR "${INSTALL_DATA_DIR}/FooBar/CMake")
-
-set(OCTOMAP_INCLUDE_TARGETS
-    "include(\${CMAKE_CURRENT_LIST_DIR}/octomap-targets.cmake)")
-
-configure_package_config_file(
-  octomap-config.cmake.in
-  "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config.cmake"
-  PATH_VARS
-  OCTOMAP_INCLUDE_DIRS
-  OCTOMAP_LIB_DIR
-  INSTALL_DESTINATION
-  "${CMAKE_INSTALL_FULL_DATADIR}/octomap")
-
-write_basic_package_version_file(
-  ${PROJECT_BINARY_DIR}/InstallFiles/octomap-config-version.cmake
-  VERSION ${OCTOMAP_VERSION}
-  COMPATIBILITY AnyNewerVersion)
-
-install(FILES "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config.cmake"
-              "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config-version.cmake"
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/octomap")
-
-# Write pkgconfig-file:
-include(InstallPkgConfigFile)
-install_pkg_config_file(
-  octomap
-  CFLAGS
-  LIBS
-  -loctomap
-  -loctomath
-  REQUIRES
-  VERSION
-  ${OCTOMAP_VERSION})
-
-# Documentation
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/octomap.dox.in
-                 ${CMAKE_CURRENT_BINARY_DIR}/octomap.dox @ONLY)
   add_custom_target(
-    docs
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/octomap.dox
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    COMMENT
-      "Generating documentation (Doxygen) at location ${PROJECT_SOURCE_DIR}/doc/html/"
-  )
-endif(DOXYGEN_FOUND)
+    uninstall COMMAND ${CMAKE_COMMAND} -P
+                      ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
-# Needs to be last statement:
-include(CPackSettings)
+  # Export the package for use from the build-tree (this registers the build-
+  # tree with a global CMake-registry)
+  export(PACKAGE octomap)
 
-# Finished:
-message("\n")
-message(STATUS "Compile octomap using: make")
-message(STATUS "Install octomap using: make install")
-message(STATUS "    (be sure to set the correct CMAKE_INSTALL_PREFIX before)")
-message(STATUS "Compile API-documentation using: make docs\n")
+  # Create a octomap-config.cmake file for the use from the build tree
+  set(OCTOMAP_INCLUDE_DIRS "${INCLUDE_DIRS}")
+  set(OCTOMAP_LIB_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+  # Set library names as absolute paths Windows, spec. MSVC requires the .lib
+  # suffix for imported libs
+  if(WIN32)
+    set(OCTOMAP_LIBRARY
+        "${CMAKE_IMPORT_LIBRARY_PREFIX}octomap${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+    set(OCTOMATH_LIBRARY
+        "${CMAKE_IMPORT_LIBRARY_PREFIX}octomath${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+  else()
+    set(OCTOMAP_LIBRARY
+        "${CMAKE_SHARED_LIBRARY_PREFIX}octomap${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set(OCTOMATH_LIBRARY
+        "${CMAKE_SHARED_LIBRARY_PREFIX}octomath${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  endif()
+
+  # not used right now (export depends?) set(OCTOMAP_CMAKE_DIR
+  # "${PROJECT_BINARY_DIR}")
+  include(CMakePackageConfigHelpers)
+
+  configure_package_config_file(
+    octomap-config.cmake.in
+    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-config.cmake"
+    PATH_VARS
+    OCTOMAP_INCLUDE_DIRS
+    OCTOMAP_LIB_DIR
+    INSTALL_DESTINATION
+    "${CMAKE_INSTALL_FULL_DATADIR}/octomap")
+
+  write_basic_package_version_file(
+    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-config-version.cmake"
+    VERSION ${OCTOMAP_VERSION}
+    COMPATIBILITY AnyNewerVersion)
+
+  # Create a octomap-config.cmake file for the use from the install tree and
+  # install it
+  set(OCTOMAP_INCLUDE_DIRS "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
+  set(OCTOMAP_LIB_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+  # set(OCTOMAP_CMAKE_DIR "${INSTALL_DATA_DIR}/FooBar/CMake")
+
+  set(OCTOMAP_INCLUDE_TARGETS
+      "include(\${CMAKE_CURRENT_LIST_DIR}/octomap-targets.cmake)")
+
+  configure_package_config_file(
+    octomap-config.cmake.in
+    "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config.cmake"
+    PATH_VARS
+    OCTOMAP_INCLUDE_DIRS
+    OCTOMAP_LIB_DIR
+    INSTALL_DESTINATION
+    "${CMAKE_INSTALL_FULL_DATADIR}/octomap")
+
+  write_basic_package_version_file(
+    ${PROJECT_BINARY_DIR}/InstallFiles/octomap-config-version.cmake
+    VERSION ${OCTOMAP_VERSION}
+    COMPATIBILITY AnyNewerVersion)
+
+  install(
+    FILES "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config.cmake"
+          "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config-version.cmake"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/octomap")
+
+  # Write pkgconfig-file:
+  include(InstallPkgConfigFile)
+  install_pkg_config_file(
+    octomap
+    CFLAGS
+    LIBS
+    -loctomap
+    -loctomath
+    REQUIRES
+    VERSION
+    ${OCTOMAP_VERSION})
+
+  # Documentation
+  find_package(Doxygen)
+  if(DOXYGEN_FOUND)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/octomap.dox.in
+                   ${CMAKE_CURRENT_BINARY_DIR}/octomap.dox @ONLY)
+    add_custom_target(
+      docs
+      ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/octomap.dox
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+      COMMENT
+        "Generating documentation (Doxygen) at location ${PROJECT_SOURCE_DIR}/doc/html/"
+    )
+  endif(DOXYGEN_FOUND)
+
+  # Needs to be last statement:
+  include(CPackSettings)
+
+  # Finished:
+  message("\n")
+  message(STATUS "Compile octomap using: make")
+  message(STATUS "Install octomap using: make install")
+  message(STATUS "    (be sure to set the correct CMAKE_INSTALL_PREFIX before)")
+  message(STATUS "Compile API-documentation using: make docs\n")
+
+endif()
