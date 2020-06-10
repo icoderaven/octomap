@@ -19,16 +19,16 @@ if(OCTOMAP_BUILD_STATIC)
   list(APPEND DEFINED_TARGETS octomath-static)
 endif()
 
+export(
+  TARGETS ${DEFINED_TARGETS}
+  APPEND
+  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-targets.cmake"
+)
+
 if(INSTALL_CONFIG)
   if(NOT EXISTS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap")
     file(MAKE_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap")
   endif()
-
-  export(
-    TARGETS ${DEFINED_TARGETS}
-    APPEND
-    FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-targets.cmake"
-  )
 
   install(
     TARGETS ${DEFINED_TARGETS}

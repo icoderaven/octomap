@@ -24,11 +24,12 @@ endif()
 
 add_subdirectory(examples)
 
+export(
+  TARGETS ${DEFINED_TARGETS}
+  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/dynamicEDT3D/dynamicEDT3DTargets.cmake"
+)
+
 if(INSTALL_CONFIG)
-  export(
-    TARGETS ${DEFINED_TARGETS}
-    FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/dynamicEDT3D/dynamicEDT3DTargets.cmake"
-  )
 
   # directly depend on the octomap library target when building the complete
   # distribution, so it it recompiled as needed

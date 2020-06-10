@@ -76,12 +76,13 @@ if(NOT OCTOMAP_BUILD_ONLY_LIB)
   target_link_libraries(octree2pointcloud octomap)
 endif()
 
+export(
+  TARGETS ${DEFINED_TARGETS}
+  APPEND
+  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-targets.cmake"
+)
+
 if(INSTALL_CONFIG)
-  export(
-    TARGETS ${DEFINED_TARGETS}
-    APPEND
-    FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-targets.cmake"
-  )
 
   install(
     TARGETS ${DEFINED_TARGETS}
