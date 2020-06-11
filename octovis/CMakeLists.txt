@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.11)
 project(octovis)
 
 include(CTest)
@@ -19,6 +19,7 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0042 NEW)
   endif(POLICY CMP0042)
 endif(COMMAND cmake_policy)
+cmake_policy(SET CMP0072 OLD) # Prefer GLVND by default when available (CMake 3.11+)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules")
 
@@ -37,35 +38,6 @@ foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BASE_DIR}/lib)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BASE_DIR}/bin)
 endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
-
-# We need the main octomap library to link against (same version as octovis)
-# Look at parent directory by default, in case the complete distribution
-# (octomap & octovis together) is built.
-#
-# Otherwise you need to export octomap_DIR to the directory containing the file
-# octomap-config.cmake
-find_package(
-  octomap ${OCTOVIS_MAJOR_VERSION}.${OCTOVIS_MINOR_VERSION} REQUIRED HINTS
-  ${CMAKE_SOURCE_DIR}/lib/cmake/octomap
-  ${CMAKE_SOURCE_DIR}/../octomap/lib/cmake/octomap)
-message(STATUS "Found octomap version: " ${octomap_VERSION})
-
-include_directories(BEFORE SYSTEM ${OCTOMAP_INCLUDE_DIRS})
-
-# Export the package for use from the build-tree (this registers the build-tree
-# with a global CMake-registry)
-export(PACKAGE octovis)
-
-set(INSTALL_TARGETS_DEFAULT_ARGS
-    RUNTIME
-    DESTINATION
-    "${CMAKE_INSTALL_BINDIR}"
-    LIBRARY
-    DESTINATION
-    "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE
-    DESTINATION
-    "${CMAKE_INSTALL_LIBDIR}")
 
 # Builds the "octovis" viewer based on OpenGL and libQGLViewer, if dependencies
 # available
@@ -93,14 +65,16 @@ endif()
 if(BUILD_VIEWER)
   message(STATUS "viewer octovis will be built")
 
-  set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
-  include_directories(${INCLUDE_DIRS})
-
   include(CMakeLists_src.txt)
 
-  # Create an octovis-config.cmake file for the use from the build tree
-  set(OCTOVIS_INCLUDE_DIRS "${INCLUDE_DIRS}")
-  set(OCTOVIS_LIB_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+  # #installation: # store all header files to install:
+  file(GLOB octovis_HDRS *.h *.hxx *.hpp)
+  install(FILES ${octovis_HDRS}
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octovis")
+
+  # Install catkin package.xml
+  install(FILES package.xml DESTINATION "share/octovis")
+
   # Set library names as absolute paths Windows, spec. MSVC requires the .lib
   # suffix for imported libs
   if(WIN32)
@@ -112,59 +86,43 @@ if(BUILD_VIEWER)
   endif()
 
   include(CMakePackageConfigHelpers)
-
-  configure_package_config_file(
-    octovis-config.cmake.in
-    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octovis/octovis-config.cmake"
-    PATH_VARS
-    OCTOVIS_INCLUDE_DIRS
-    OCTOVIS_LIB_DIR
-    INSTALL_DESTINATION
-    ${CMAKE_INSTALL_PREFIX}/share/octovis)
-
-  write_basic_package_version_file(
-    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octovis/octovis-config-version.cmake"
-    VERSION ${OCTOVIS_VERSION}
-    COMPATIBILITY AnyNewerVersion)
-
-  # not used right now (export depends?) set(OCTOMAP_CMAKE_DIR
-  # "${PROJECT_BINARY_DIR}")
+  set(OCTOVIS_CMAKECONFIG_INSTALL_DIR
+      "share/cmake/octovis"
+      CACHE STRING "install path for octovis-config.cmake")
 
   # Create a octovis-config.cmake file for the use from the install tree and
   # install it
-  set(OCTOVIS_INCLUDE_DIRS "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
-  set(OCTOVIS_LIB_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
-  # set(OCTOMAP_CMAKE_DIR "${INSTALL_DATA_DIR}/FooBar/CMake")
-
-  set(OCTOVIS_INCLUDE_TARGETS
-      "include(\${CMAKE_CURRENT_LIST_DIR}/octovis-targets.cmake)")
+  set(OCTOVIS_INCLUDE_DIRS include/)
+  set(OCTOVIS_LIB_DIR libs/)
 
   configure_package_config_file(
     octovis-config.cmake.in
-    "${PROJECT_BINARY_DIR}/InstallFiles/octovis-config.cmake"
+    ${CMAKE_CURRENT_BINARY_DIR}/octovis-config.cmake
     PATH_VARS
     OCTOVIS_INCLUDE_DIRS
     OCTOVIS_LIB_DIR
     INSTALL_DESTINATION
-    "${CMAKE_INSTALL_FULL_DATADIR}/octovis")
+    ${OCTOVIS_CMAKECONFIG_INSTALL_DIR})
 
   write_basic_package_version_file(
-    "${PROJECT_BINARY_DIR}/InstallFiles/octovis-config-version.cmake"
+    octovis-config-version.cmake
     VERSION ${OCTOVIS_VERSION}
     COMPATIBILITY AnyNewerVersion)
 
-  install(
-    FILES "${PROJECT_BINARY_DIR}/InstallFiles/octovis-config.cmake"
-          "${PROJECT_BINARY_DIR}/InstallFiles/octovis-config-version.cmake"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/octovis")
+  if(OCTOMAP_MASTER_PROJECT)
+    install(
+      EXPORT octovis-targets
+      NAMESPACE "${PROJECT_NAME}::"
+      DESTINATION "share/cmake/octovis")
 
-  # #installation: # store all header files to install:
-  file(GLOB octovis_HDRS *.h *.hxx *.hpp)
-  install(FILES ${octovis_HDRS}
-          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octovis")
+    # Export the package for use from the build-tree (this registers the build-
+    # tree with a global CMake-registry)
+    export(PACKAGE octovis)
 
-  # Install catkin package.xml
-  install(FILES package.xml DESTINATION "${CMAKE_INSTALL_DATADIR}/octovis")
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/octovis-config.cmake
+                  ${CMAKE_CURRENT_BINARY_DIR}/octovis-config-version.cmake
+            DESTINATION ${OCTOVIS_CMAKECONFIG_INSTALL_DIR})
+  endif()
 
 else()
   message(

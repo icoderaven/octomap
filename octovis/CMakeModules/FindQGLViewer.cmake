@@ -12,8 +12,8 @@
 SET( QGLViewer_FOUND 0 CACHE BOOL "Do we have QGLViewer?" )
 
 FIND_PATH( QGLVIEWER_BASE_DIR qglviewer.h
-  ${CMAKE_SOURCE_DIR}/src/extern/QGLViewer
-  ${CMAKE_SOURCE_DIR}/octovis/src/extern/QGLViewer
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/extern/QGLViewer
+  ${CMAKE_CURRENT_SOURCE_DIR}/octovis/src/extern/QGLViewer
 )
 
 FIND_PATH( QGLViewer_INCLUDE_DIR qglviewer.h

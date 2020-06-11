@@ -12,6 +12,8 @@ set(octomap_SRCS
 # dynamic and static libs, see CMake FAQ:
 if(OCTOMAP_BUILD_SHARED)
   add_library(octomap SHARED ${octomap_SRCS})
+  # add alias to match exported target when calling using add_subdirectory()
+  add_library(octomap::octomap ALIAS octomap)
   set_target_properties(octomap PROPERTIES VERSION ${OCTOMAP_VERSION}
                                            SOVERSION ${OCTOMAP_SOVERSION})
   target_include_directories(
@@ -23,6 +25,8 @@ endif()
 
 if(OCTOMAP_BUILD_STATIC)
   add_library(octomap-static STATIC ${octomap_SRCS})
+  # add alias to match exported target when calling using add_subdirectory()
+  add_library(octomap::octomap-static ALIAS octomap-static)
   set_target_properties(octomap-static PROPERTIES OUTPUT_NAME "octomap")
 
   add_dependencies(octomap-static octomath-static)
@@ -30,10 +34,6 @@ if(OCTOMAP_BUILD_STATIC)
     octomap-static PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
                           $<INSTALL_INTERFACE:include>)
   list(APPEND DEFINED_TARGETS octomap-static)
-endif()
-
-if(NOT EXISTS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap")
-  file(MAKE_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap")
 endif()
 
 if(NOT OCTOMAP_BUILD_ONLY_LIB)
@@ -76,17 +76,7 @@ if(NOT OCTOMAP_BUILD_ONLY_LIB)
   target_link_libraries(octree2pointcloud octomap)
 endif()
 
-export(
-  TARGETS ${DEFINED_TARGETS}
-  APPEND
-  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-targets.cmake")
-
 install(TARGETS ${DEFINED_TARGETS} EXPORT "${OCTOMAP_EXPORT_NAME}")
-
-install(
-  EXPORT "${OCTOMAP_EXPORT_NAME}"
-  NAMESPACE "octomap::"
-  DESTINATION ${OCTOMAP_CMAKECONFIG_INSTALL_DIR})
 
 if(NOT OCTOMAP_BUILD_ONLY_LIB)
   install(
@@ -99,4 +89,13 @@ if(NOT OCTOMAP_BUILD_ONLY_LIB)
             eval_octree_accuracy
             compare_octrees
             ${INSTALL_TARGETS_DEFAULT_ARGS})
+endif()
+
+# Install the targets only if we're the Master project
+if(OCTOMAP_MASTER_PROJECT)
+  export(
+    TARGETS ${DEFINED_TARGETS}
+    APPEND
+    FILE "${OCTOMAP_EXPORT_NAME}.cmake"
+  )
 endif()
