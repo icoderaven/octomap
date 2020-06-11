@@ -20,8 +20,9 @@ if(OCTOMAP_BUILD_STATIC)
   add_library(dynamicEDT3D::dynamicedt3d-static ALIAS dynamicedt3d-static)
   target_link_libraries(dynamicedt3d-static octomap-static)
   target_include_directories(
-    dynamicedt3d-static PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
-                        INTERFACE $<INSTALL_INTERFACE:include>)
+    dynamicedt3d-static
+    PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
+    INTERFACE $<INSTALL_INTERFACE:include>)
   set_target_properties(dynamicedt3d-static PROPERTIES OUTPUT_NAME
                                                        "dynamicedt3d")
   list(APPEND DEFINED_TARGETS dynamicedt3d-static)
@@ -33,11 +34,6 @@ endif()
 
 add_subdirectory(examples)
 
-export(
-  TARGETS ${DEFINED_TARGETS}
-  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/dynamicEDT3D/dynamicEDT3DTargets.cmake"
-)
-
 # directly depend on the octomap library target when building the complete
 # distribution, so it it recompiled as needed
 if(OCTOMAP_BUILD_STATIC)
@@ -48,3 +44,8 @@ if(OCTOMAP_BUILD_SHARED)
 endif()
 
 install(TARGETS ${DEFINED_TARGETS} EXPORT dynamicEDT3DTargets)
+
+if(OCTOMAP_MASTER_PROJECT)
+  export(TARGETS ${DEFINED_TARGETS}
+         FILE "dynamicEDT3D-targets.cmake")
+endif()
