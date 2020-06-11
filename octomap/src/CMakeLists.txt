@@ -79,29 +79,24 @@ endif()
 export(
   TARGETS ${DEFINED_TARGETS}
   APPEND
-  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-targets.cmake"
-)
+  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-targets.cmake")
 
-if(INSTALL_CONFIG)
+install(TARGETS ${DEFINED_TARGETS} EXPORT "${OCTOMAP_EXPORT_NAME}")
 
+install(
+  EXPORT "${OCTOMAP_EXPORT_NAME}"
+  NAMESPACE "octomap::"
+  DESTINATION ${OCTOMAP_CMAKECONFIG_INSTALL_DIR})
+
+if(NOT OCTOMAP_BUILD_ONLY_LIB)
   install(
-    TARGETS ${DEFINED_TARGETS}
-    EXPORT octomap-targets
-    INCLUDES
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    ${INSTALL_TARGETS_DEFAULT_ARGS})
-  install(EXPORT octomap-targets DESTINATION "${CMAKE_INSTALL_DATADIR}/octomap")
-
-  if(NOT OCTOMAP_BUILD_ONLY_LIB)
-    install(
-      TARGETS graph2tree
-              log2graph
-              binvox2bt
-              bt2vrml
-              edit_octree
-              convert_octree
-              eval_octree_accuracy
-              compare_octrees
-              ${INSTALL_TARGETS_DEFAULT_ARGS})
-  endif()
+    TARGETS graph2tree
+            log2graph
+            binvox2bt
+            bt2vrml
+            edit_octree
+            convert_octree
+            eval_octree_accuracy
+            compare_octrees
+            ${INSTALL_TARGETS_DEFAULT_ARGS})
 endif()

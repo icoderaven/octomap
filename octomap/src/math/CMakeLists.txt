@@ -22,18 +22,10 @@ endif()
 export(
   TARGETS ${DEFINED_TARGETS}
   APPEND
-  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-targets.cmake"
-)
+  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap/octomap-targets.cmake")
 
-if(INSTALL_CONFIG)
-  if(NOT EXISTS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap")
-    file(MAKE_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap")
-  endif()
-
-  install(
-    TARGETS ${DEFINED_TARGETS}
-    EXPORT octomap-targets
-    INCLUDES
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    ${INSTALL_TARGETS_DEFAULT_ARGS})
+if(NOT EXISTS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap")
+  file(MAKE_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/octomap")
 endif()
+
+install(TARGETS ${DEFINED_TARGETS} EXPORT "${OCTOMAP_EXPORT_NAME}")

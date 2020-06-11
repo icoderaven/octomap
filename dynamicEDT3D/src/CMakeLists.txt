@@ -29,23 +29,20 @@ export(
   FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/dynamicEDT3D/dynamicEDT3DTargets.cmake"
 )
 
-if(INSTALL_CONFIG)
-
-  # directly depend on the octomap library target when building the complete
-  # distribution, so it it recompiled as needed
-  if(OCTOMAP_BUILD_STATIC)
-    add_dependencies(dynamicedt3d-static octomap-static)
-  endif()
-  if(OCTOMAP_BUILD_SHARED)
-    add_dependencies(dynamicedt3d octomap)
-  endif()
-
-  install(
-    TARGETS ${DEFINED_TARGETS}
-    EXPORT dynamicEDT3DTargets
-    INCLUDES
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    ${INSTALL_TARGETS_DEFAULT_ARGS})
-  install(EXPORT dynamicEDT3DTargets
-          DESTINATION "${CMAKE_INSTALL_DATADIR}/dynamicEDT3D")
+# directly depend on the octomap library target when building the complete
+# distribution, so it it recompiled as needed
+if(OCTOMAP_BUILD_STATIC)
+  add_dependencies(dynamicedt3d-static octomap-static)
 endif()
+if(OCTOMAP_BUILD_SHARED)
+  add_dependencies(dynamicedt3d octomap)
+endif()
+
+install(
+  TARGETS ${DEFINED_TARGETS}
+  EXPORT dynamicEDT3DTargets
+  INCLUDES
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+  ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(EXPORT dynamicEDT3DTargets
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/dynamicEDT3D")

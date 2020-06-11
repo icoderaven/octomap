@@ -66,6 +66,10 @@ set(INSTALL_TARGETS_DEFAULT_ARGS
     DESTINATION
     "${CMAKE_INSTALL_LIBDIR}")
 
+set(OCTOMAP_CMAKECONFIG_INSTALL_DIR
+    "share/cmake/octomap"
+    CACHE STRING "install path for octomap-config.cmake")
+
 add_subdirectory(src/math)
 add_subdirectory(src)
 
@@ -145,51 +149,46 @@ write_basic_package_version_file(
   VERSION ${OCTOMAP_VERSION}
   COMPATIBILITY AnyNewerVersion)
 
-if(INSTALL_CONFIG)
-  install(FILES ${octomap_math_HDRS}
-          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octomap/math")
-  install(FILES ${octomap_HDRS}
-          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octomap")
-  # Install catkin package.xml
-  install(FILES package.xml DESTINATION "${CMAKE_INSTALL_DATADIR}/octomap")
-  install(
-    FILES "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config.cmake"
-          "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config-version.cmake"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/octomap")
+install(FILES ${octomap_math_HDRS}
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octomap/math")
+install(FILES ${octomap_HDRS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/octomap")
+# Install catkin package.xml
+install(FILES package.xml DESTINATION "${CMAKE_INSTALL_DATADIR}/octomap")
+install(FILES "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config.cmake"
+              "${PROJECT_BINARY_DIR}/InstallFiles/octomap-config-version.cmake"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/octomap")
 
-  # Write pkgconfig-file:
-  include(InstallPkgConfigFile)
-  install_pkg_config_file(
-    octomap
-    CFLAGS
-    LIBS
-    -loctomap
-    -loctomath
-    REQUIRES
-    VERSION
-    ${OCTOMAP_VERSION})
+# Write pkgconfig-file:
+include(InstallPkgConfigFile)
+install_pkg_config_file(
+  octomap
+  CFLAGS
+  LIBS
+  -loctomap
+  -loctomath
+  REQUIRES
+  VERSION
+  ${OCTOMAP_VERSION})
 
-  # Documentation
-  find_package(Doxygen)
-  if(DOXYGEN_FOUND)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/octomap.dox.in
-                   ${CMAKE_CURRENT_BINARY_DIR}/octomap.dox @ONLY)
-    add_custom_target(
-      docs
-      ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/octomap.dox
-      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-      COMMENT
-        "Generating documentation (Doxygen) at location ${PROJECT_SOURCE_DIR}/doc/html/"
-    )
-  endif(DOXYGEN_FOUND)
+# Documentation
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/octomap.dox.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/octomap.dox @ONLY)
+  add_custom_target(
+    docs
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/octomap.dox
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT
+      "Generating documentation (Doxygen) at location ${PROJECT_SOURCE_DIR}/doc/html/"
+  )
+endif(DOXYGEN_FOUND)
 
-  # Needs to be last statement:
-  include(CPackSettings)
+# Needs to be last statement:
+include(CPackSettings)
 
-  # Finished:
-  message(STATUS "Compile octomap using: make")
-  message(STATUS "Install octomap using: make install")
-  message(STATUS "    (be sure to set the correct CMAKE_INSTALL_PREFIX before)")
-  message(STATUS "Compile API-documentation using: make docs")
-
-endif()
+# Finished:
+message(STATUS "Compile octomap using: make")
+message(STATUS "Install octomap using: make install")
+message(STATUS "    (be sure to set the correct CMAKE_INSTALL_PREFIX before)")
+message(STATUS "Compile API-documentation using: make docs")

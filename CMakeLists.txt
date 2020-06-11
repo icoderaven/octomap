@@ -2,14 +2,18 @@ cmake_minimum_required(VERSION 3.0.2)
 project(octomap-distribution)
 
 # Check if this CMakeLists is being used directly or via add_subdirectory
-set(INSTALL_CONFIG OFF)
+set(OCTOMAP_MASTER_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  set(INSTALL_CONFIG ON)
+  set(OCTOMAP_MASTER_PROJECT ON)
 endif()
+# Allow for parent CMakeLists to populate the outgoing targets file
+if(NOT OCTOMAP_EXPORT_NAME)
+  set(OCTOMAP_EXPORT_NAME "octomap-targets")
+endif()
+message(STATUS "[octomap]:: Export name is ${OCTOMAP_EXPORT_NAME}")
 
-if(INSTALL_CONFIG)
-  enable_testing() # enable CTest environment of subprojects
-endif()
+enable_testing() # enable CTest environment of subprojects
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # enables -fPIC in applicable compilers
                                         # (required to avoid link errors in some
                                         # cases)
