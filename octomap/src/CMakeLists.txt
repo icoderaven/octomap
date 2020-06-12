@@ -76,7 +76,7 @@ if(NOT OCTOMAP_BUILD_ONLY_LIB)
   target_link_libraries(octree2pointcloud octomap)
 endif()
 
-install(TARGETS ${DEFINED_TARGETS} EXPORT "${OCTOMAP_EXPORT_NAME}")
+install(TARGETS ${DEFINED_TARGETS} EXPORT "${OCTOMAP_EXPORT_NAME}" LIBRARY DESTINATION lib)
 
 if(NOT OCTOMAP_BUILD_ONLY_LIB)
   install(

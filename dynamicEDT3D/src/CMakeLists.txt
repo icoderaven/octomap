@@ -43,7 +43,7 @@ if(OCTOMAP_BUILD_SHARED)
   add_dependencies(dynamicedt3d octomap)
 endif()
 
-install(TARGETS ${DEFINED_TARGETS} EXPORT dynamicEDT3DTargets)
+install(TARGETS ${DEFINED_TARGETS} EXPORT dynamicEDT3DTargets LIBRARY DESTINATION lib)
 
 if(OCTOMAP_MASTER_PROJECT)
   export(TARGETS ${DEFINED_TARGETS}
